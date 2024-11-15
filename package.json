@@ -2,7 +2,6 @@
   "name": "tesis-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://jhonnyjakucr01.github.io/caliMap/build",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
