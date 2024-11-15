@@ -13,7 +13,6 @@ import "leaflet/dist/leaflet.css";
 import HeatMapLayer from "./HeatMapLayer";
 import FilterMenu from "./FilterMenu";
 import * as turf from "@turf/turf"; // Necesitarás Turf.js para verificar si un punto está dentro de un polígono
-import { Modal } from "antd";
 import InfoBox from "./Infobox";
 import ModalComunaInfo from "./ModalComunaInfo";
 
@@ -35,11 +34,6 @@ const MapWithFilter: React.FC = () => {
   );
 
   const [counts, setCounts] = useState<CommuneMarkerCounts>({}); // Estado para guardar el conteo de marcadores por comuna
-
-  type MarkerCounts = {
-    [comuna: string]: { [category: string]: number };
-  };
-
 
   interface ComunaProperties {
     comuna: string;

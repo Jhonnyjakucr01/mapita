@@ -1,5 +1,5 @@
 import React from "react";
-import { Menu, Checkbox, Button } from "antd";
+import { Menu, Checkbox } from "antd";
 import { MenuProps } from "antd/es/menu";
 
 interface ComunaProperties {
