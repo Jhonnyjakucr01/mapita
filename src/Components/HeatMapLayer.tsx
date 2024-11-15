@@ -25,7 +25,7 @@ const HeatMapLayer: React.FC<HeatMapLayerProps> = ({ points, color }) => {
     // return () => {
     //   map.remove();
     // };
-  }, [points, color]);
+  }, [points, color, map]);
 
   return <></>;
 };
