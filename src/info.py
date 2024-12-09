@@ -67,3 +67,5 @@ with pdfplumber.open(pdf_path) as pdf:
 for comuna, barrios in comunas_info.items():
     print(f"\nComuna {comuna}:")
     print(", ".join(barrios))
+
+

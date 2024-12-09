@@ -28,7 +28,9 @@ interface FilterMenuProps {
   onToggleColors: (checked: boolean) => void; // Nuevo prop para activar/desactivar límites
   showBoundaries: boolean; // Nuevo prop para mostrar/ocultar límites
   showColors: boolean;
+  showCicloRuta: boolean;
   onOpenModal: (comuna: ComunaProperties) => void; // Cambiado para aceptar un parámetro
+  onToggleCicloRutas: (checked: boolean) => void;
 }
 
 const FilterMenu: React.FC<FilterMenuProps> = ({
@@ -38,7 +40,9 @@ const FilterMenu: React.FC<FilterMenuProps> = ({
   onToggleColors,
   showBoundaries,
   showColors,
+  showCicloRuta,
   onOpenModal,
+  onToggleCicloRutas,
 }) => {
   const handleMenuSelect: MenuProps["onSelect"] = (e) => {
     console.log("e", e);
@@ -58,13 +62,10 @@ const FilterMenu: React.FC<FilterMenuProps> = ({
     onToggleColors(e.target.checked);
   };
 
-  // const handleAllFiltersChange = (e: any) => {
-  //   onToggleAllFilters(e.target.checked);
-  // };
-
-  // const handleColorLayerChange = (e: any) => { // Añadir esta función
-  //   onToggleColorLayer(e.target.checked);
-  // };
+  
+  const handleCicloRuta = (e:any) => {
+    onToggleCicloRutas(e.target.checked);
+  }
 
   return (
     <div
@@ -88,29 +89,25 @@ const FilterMenu: React.FC<FilterMenuProps> = ({
         <div style={{ padding: "10px" }}>
           <Checkbox onChange={handleBoundariesChange} checked={showBoundaries}>
             Marcadores populares x comuna
-
           </Checkbox>
         </div>
 
         <div style={{ padding: "10px" }}>
           <Checkbox onChange={handleColorsChange} checked={showColors}>
-            limites de comunas
+            límites de comunas
           </Checkbox>
         </div>
 
-        {/* Checkbox para activar/desactivar todos los filtros
-        <div style={{ padding: "9px" }}>
-          <Checkbox onChange={handleAllFiltersChange}>
-            Activar todos los filtros
-          </Checkbox>
-        </div> */}
 
-        {/* Checkbox para activar/desactivar la capa de colores por categoría
-        <div style={{ padding: "9px" }}>
-          <Checkbox onChange={handleColorLayerChange}>
-            Categorías predominantes
+        <div style={{ padding: "10px" }}>
+          <Checkbox onChange={handleCicloRuta} checked={showCicloRuta}>
+            ciclo ruta
           </Checkbox>
-        </div> */}
+        </div>
+
+
+
+
 
         <Menu.Item key="comunas">Comunas</Menu.Item>
 
@@ -123,34 +120,25 @@ const FilterMenu: React.FC<FilterMenuProps> = ({
             <Menu.Item key="hospitales">Hospitales</Menu.Item>
             <Menu.Item key="hoteles">Hoteles</Menu.Item>
             <Menu.Item key="bancos">Bancos</Menu.Item>
+            <Menu.Item key="estaciones mio">Estaciones mio</Menu.Item>
+            <Menu.Item key="Fotomultas">Fotomultas</Menu.Item>
+            <Menu.Item key="estaciones electricas">Estaciones Electricas</Menu.Item>
+
           </Menu.SubMenu>
           <Menu.SubMenu key="entertainment" title="Entretenimiento">
             <Menu.Item key="centros comerciales">Centros Comerciales</Menu.Item>
             <Menu.Item key="monumentos">Monumentos</Menu.Item>
-            <Menu.Item key="Fotomultas">Fotomultas</Menu.Item>
+          </Menu.SubMenu>
+
+          {/* Nueva categoría "Deporte" */}
+          <Menu.SubMenu key="sports" title="Deporte">
+          <Menu.Item key="ciclo ruta">Ciclo Ruta</Menu.Item>
+          <Menu.Item key="unidades deportivas">Unidades Deportivas</Menu.Item>
+
+
           </Menu.SubMenu>
         </Menu.SubMenu>
 
-        <Menu.SubMenu key="heatmaps" title="Mapas de Calor">
-          <Menu.Item key="heatmap_colegios">Mapa de Calor Colegios</Menu.Item>
-          <Menu.Item key="heatmap_universidades">
-            Mapa de Calor Universidades
-          </Menu.Item>
-          <Menu.Item key="heatmap_hospitales">
-            Mapa de Calor Hospitales
-          </Menu.Item>
-          <Menu.Item key="heatmap_clinicas">Mapa de Calor Clínicas</Menu.Item>
-          <Menu.Item key="heatmap_bancos">Mapa de Calor Bancos</Menu.Item>
-          <Menu.Item key="heatmap_centros_comerciales">
-            Mapa de Calor Centros Comerciales
-          </Menu.Item>
-          <Menu.Item key="heatmap_monumentos">
-            Mapa de Calor Monumentos
-          </Menu.Item>
-          <Menu.Item key="heatmap_fotomultas">
-            Mapa de Calor Fotomultas
-          </Menu.Item>
-        </Menu.SubMenu>
       </Menu>
     </div>
   );

@@ -15,6 +15,8 @@ import FilterMenu from "./FilterMenu";
 import * as turf from "@turf/turf"; // Necesitarás Turf.js para verificar si un punto está dentro de un polígono
 import InfoBox from "./Infobox";
 import ModalComunaInfo from "./ModalComunaInfo";
+import { Button } from "antd";
+import CreateMarkerModal from "./CreateMarkerModal";
 
 const MapWithFilter: React.FC = () => {
   const [markers, setMarkers] = useState<MarkerData[]>([]);
@@ -23,17 +25,26 @@ const MapWithFilter: React.FC = () => {
   const [selectedHeatMaps, setSelectedHeatMaps] = useState<Set<string>>(
     new Set()
   );
-  const [geoJsonData, setGeoJsonData] = useState<any>(null); //guardar los datos geojson de los limites
-  const [geoJsonDataColor, setGeoJsonDataColor] = useState<any>(null); //guardar los datos geojson de los limites
+  const [geoJsonData, setGeoJsonData] = useState<any>(null);
+  const [geoJsonDataColor, setGeoJsonDataColor] = useState<any>(null);
 
-  const [showBoundaries, setShowBoundaries] = useState<boolean>(false); //mostrar los limites de las comunas y la ciudad
-  const [showColors, setShowColors] = useState<boolean>(false); //mostrar los limites de las comunas y la ciudad
+  const [showBoundaries, setShowBoundaries] = useState<boolean>(false);
+  const [showColors, setShowColors] = useState<boolean>(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedComuna, setSelectedComuna] = useState<ComunaProperties | undefined>(
-    undefined
-  );
+  const [isModalVisibleCrearM, setIsModalVisibleCrearM] = useState(false);
 
-  const [counts, setCounts] = useState<CommuneMarkerCounts>({}); // Estado para guardar el conteo de marcadores por comuna
+  const [selectedComuna, setSelectedComuna] = useState<
+    ComunaProperties | undefined
+  >(undefined);
+  const [showCicloRuta, setShowCicloRuta] = useState<boolean>(false);
+
+  const [cicloRutaGeoJson, setCiclorutaGeoJson] = useState<any>(null);
+
+  const [counts, setCounts] = useState<CommuneMarkerCounts>({});
+
+  const handleAddMarker = (newMarker: MarkerData) => {
+    setMarkers([...markers, newMarker]);
+  };
 
   interface ComunaProperties {
     comuna: string;
@@ -72,15 +83,20 @@ const MapWithFilter: React.FC = () => {
 
   //cargar la informacion desde el excel
   useEffect(() => {
-    // Cargar el archivo GeoJSON de las comunas y el Excel con los marcadores
     const fetchGeoJson = async () => {
       try {
-        const response = await fetch("/data/comunasCoo.geojson");
-        const data = await response.json();
-        setGeoJsonData(data);
-        setGeoJsonDataColor(data);
+        // Cargar GeoJSON de comunas
+        const comunasResponse = await fetch("/data/comunasCoo.geojson");
+        const comunasData = await comunasResponse.json();
+        setGeoJsonData(comunasData);
+        setGeoJsonDataColor(comunasData);
+
+        // Cargar GeoJSON de ciclorutas
+        const ciclorutaResponse = await fetch("/data/cicloRuta.geojson");
+        const ciclorutaData = await ciclorutaResponse.json();
+        setCiclorutaGeoJson(ciclorutaData); // Guarda el GeoJSON de las ciclorutas
       } catch (error) {
-        console.error("Error al cargar el archivo GeoJSON:", error);
+        console.error("Error al cargar los archivos GeoJSON:", error);
       }
     };
 
@@ -124,7 +140,6 @@ const MapWithFilter: React.FC = () => {
     setIsModalVisible(true);
   };
 
-  //estilo metodo para el borde de los limites de la comuna y la opacida cuando se selecciona una comuna
   const boundaryStyle: (
     feature?: GeoJSON.Feature<GeoJSON.Geometry, ComunaProperties>
   ) => PathOptions = (feature) => {
@@ -200,7 +215,6 @@ const MapWithFilter: React.FC = () => {
     // }
   }, [selectedTypes, markers]);
 
-
   const handleTypeChange = (selectedKeys: string[]) => {
     console.log(
       "%chandleTypeChange",
@@ -218,11 +232,15 @@ const MapWithFilter: React.FC = () => {
     setShowBoundaries(checked);
   };
 
+  const handleToggleCicloRuta = (checked: boolean) => {
+    setShowCicloRuta(checked);
+  };
+
   const handleToggleColor = (checked: boolean) => {
     setShowColors(checked);
   };
 
-//metodo hacer clic cada comuna
+  //metodo hacer clic cada comuna
   const onEachFeatureInfo = (feature: any, layer: any) => {
     layer.on({
       click: () => {
@@ -322,13 +340,11 @@ const MapWithFilter: React.FC = () => {
   );
 
   useEffect(() => {
-    // Si tanto los marcadores como el GeoJSON están cargados, calcula el conteo de marcadores por comuna
     if (geoJsonData && markers.length > 0) {
       const calculatedCounts = assignMarkersToCommunes(markers, geoJsonData);
       setCounts(calculatedCounts); // Actualiza el estado con el conteo de marcadores por comuna
     }
   }, [geoJsonData, markers, assignMarkersToCommunes]);
-
 
   // Función para obtener el color según el tipo de marcador
   const getColorByType = (type: string) => {
@@ -370,6 +386,30 @@ const MapWithFilter: React.FC = () => {
 
   return (
     <div>
+       <div style={{ position: "relative" }}>
+      {/* Botón flotante para abrir el modal */}
+      <Button
+        type="primary"
+        onClick={() => setIsModalVisibleCrearM(true)}
+
+        style={{
+          position: "absolute",
+          top: "20px", // distancia desde la parte superior
+          right: "20px", // distancia desde la parte derecha
+          zIndex: 1000, // asegura que esté por encima de otros elementos
+        }}
+      >
+        Crear Marcador
+      </Button>
+      </div>
+
+      <CreateMarkerModal
+        isVisible={isModalVisibleCrearM}
+        onCreate={handleAddMarker}
+        onClose={() => setIsModalVisibleCrearM(false)}
+      />
+
+
       <FilterMenu
         onFilterChange={handleTypeChange}
         onHeatMapChange={handleHeatMapChange}
@@ -377,7 +417,9 @@ const MapWithFilter: React.FC = () => {
         onToggleColors={handleToggleColor}
         showBoundaries={showBoundaries}
         showColors={showColors}
+        showCicloRuta={showCicloRuta}
         onOpenModal={onOpenModal}
+        onToggleCicloRutas={handleToggleCicloRuta}
       />
       <MapContainer
         center={[3.4516, -76.532]}
@@ -389,6 +431,12 @@ const MapWithFilter: React.FC = () => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution="© OpenStreetMap contributors"
         />
+        {showCicloRuta && cicloRutaGeoJson && (
+          <GeoJSON
+            data={cicloRutaGeoJson}
+            style={{ color: "red", weight: 3 }}
+          />
+        )}
         colores marcadores populares
         {geoJsonData && showBoundaries && (
           <GeoJSON
@@ -398,20 +446,23 @@ const MapWithFilter: React.FC = () => {
             onEachFeature={(feature, layer) => {
               const communeName = feature.properties.comuna;
               const communeCounts = counts[communeName] || {};
-    
+
               // Añadir Tooltip para cada comuna con el conteo de marcadores por tipo
               layer.bindTooltip(
                 `<div style="font-size: 12px; padding: 5px;">
                   <span style="font-weight: bold;">${communeName}</span>
                   <ul style="padding-left: 0; margin: 5px 0 0 0; list-style-type: none;">
-                    ${Object.entries(communeCounts).map(([type, count]) => 
-                      `<li style="margin: 2px 0;">${type}: ${count}</li>`
-                    ).join('')}
+                    ${Object.entries(communeCounts)
+                      .map(
+                        ([type, count]) =>
+                          `<li style="margin: 2px 0;">${type}: ${count}</li>`
+                      )
+                      .join("")}
                   </ul>
                 </div>`,
                 { sticky: true, direction: "auto", opacity: 0.6 }
               );
-    
+
               layer.on({
                 mouseover: () => layer.openTooltip(),
                 mouseout: () => layer.closeTooltip(),
@@ -430,26 +481,23 @@ const MapWithFilter: React.FC = () => {
             onEachFeature={onEachFeatureInfo}
           />
         )}
-
         <ModalComunaInfo
-        selectedComuna={selectedComuna || undefined} // Si selectedComuna es null, se pasa undefined
-        isVisible={isModalVisible}
-          onClose={ () => setIsModalVisible(false)}
+          selectedComuna={selectedComuna || undefined} // Si selectedComuna es null, se pasa undefined
+          isVisible={isModalVisible}
+          onClose={() => setIsModalVisible(false)}
         />
-
         {/* Renderizar los marcadores filtrados */}
         <LayerGroup>
           {filteredMarkers.map((marker, index) => (
             <Marker
               key={index}
               position={[marker.lat, marker.lng]}
-              icon={getIconByCategory(marker.tipo)} // Llamada a la función de ícono personalizado
+              icon={getIconByCategory(marker.tipo)}
             >
               <Popup>{marker.nombre}</Popup>
             </Marker>
           ))}
         </LayerGroup>
-
         <LayerGroup>
           {/* Renderizar capas de mapa de calor seleccionadas */}
           {Array.from(selectedHeatMaps).map((category) => (
